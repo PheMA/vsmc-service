@@ -52,15 +52,15 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
 
     val valueSetName = valueSet.getName()
 
-    val versions = vsacRestDao.getValueSetDefinitionVersions(valueSetName)
+    val labels = vsacRestDao.getValueSetDefinitionLabels(valueSetName)
 
-    if (versions == null || CollectionUtils.isEmpty(versions)) {
+    if (labels == null || CollectionUtils.isEmpty(labels)) {
       return null;
     }
 
-    val versionId = vsacRestDao.getValueSetDefinitionVersions(valueSetName).sorted.get(versions.size() - 1)
+    val labelId = labels.sorted.get(labels.size() - 1)
 
-    new LocalIdValueSetDefinition(versionId, null)
+    new LocalIdValueSetDefinition(labelId, null)
   }
 
   @Override
@@ -95,6 +95,7 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
     val oid = jsonRow.oid
     val name = jsonRow.name
     val version = jsonRow.revision
+    val label = jsonRow.label
     val grouping = jsonRow.`type`.equals(GROUPING)
 
     //We still get JSON back even if we asked for the wrong thing, but
@@ -118,7 +119,7 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
     valueSetDefinition.setDefinedValueSet(buildValueSetReference(jsonRow, urlConstructor))
 
     if (grouping) {
-      getGroups(oid, version).foreach {
+      getGroups(oid, version, label).foreach {
         entry => {
           entry.setEntryOrder(valueSetDefinition.getEntryCount + 1)
           valueSetDefinition.addEntry(entry)
@@ -128,23 +129,23 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
       val entry = new ValueSetDefinitionEntry()
       entry.setOperator(SetOperator.UNION)
       entry.setEntryOrder(1)
-      entry.setEntityList(getEntries(oid, version))
+      entry.setEntityList(getEntries(oid, version, label))
       valueSetDefinition.addEntry(entry)
     }
 
     valueSetDefinition
   }
 
-  private def getGroups(oid: String, version: String) = {
-    vsacRestDao.getGroupingInfo(oid, version).rows.foldLeft(Seq[ValueSetDefinitionEntry]())(
+  private def getGroups(oid: String, version: String, label: String) = {
+    vsacRestDao.getGroupingInfo(oid, version, label).rows.foldLeft(Seq[ValueSetDefinitionEntry]())(
       (seq, row) => {
         seq :+ buildCompleteValueSetEntry(row)
       }
     )
   }
 
-  private def getEntries(oid: String, version: String) = {
-    vsacRestDao.getMembersOfValueSet(oid, version, MAX_SPECIFIC_ENTITIES, 1).rows.foldLeft(new SpecificEntityList())(
+  private def getEntries(oid: String, version: String, label: String) = {
+    vsacRestDao.getMembersOfValueSet(oid, version, label, MAX_SPECIFIC_ENTITIES, 1).rows.foldLeft(new SpecificEntityList())(
       (list, row) => {
         list.addReferencedEntity(buildEntityEntry(row))
         list

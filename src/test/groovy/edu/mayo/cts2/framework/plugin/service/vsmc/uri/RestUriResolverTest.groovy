@@ -27,37 +27,37 @@ class RestUriResolverTest {
 		"SOP",
 		"CDCREC"]
 	
-	@Before
+	//@Before
 	void SetUp(){
 		resolver = new RestUriResolver("https://informatics.mayo.edu/cts2/services/uriresolver")
 	}
 
-	@Test
+	//@Test
 	void TestIdToName() {
 		assertEquals "LNC", resolver.idToName("http://id.nlm.nih.gov/cui/C1136323", IdType.CODE_SYSTEM())
 	}
 	
-	@Test
+	//@Test
 	void TestIdToUri() {
 		assertEquals "http://id.nlm.nih.gov/cui/C1136323", resolver.idToUri("LNC", IdType.CODE_SYSTEM())
 	}
 	
-	@Test
+	//@Test
 	void TestIdToBaseUri() {
 		assertEquals "http://id.nlm.nih.gov/cui/C1136323/", resolver.idToBaseUri("LNC")
 	}
 	
-	@Test
+	//@Test
 	void TestIdAndVersionToUri() {
 		assertEquals "http://id.nlm.nih.gov/cui/C3260726", resolver.idAndVersionToVersionUri("LNC", "238", IdType.CODE_SYSTEM())
 	}
 	
-	@Test
+	//@Test
 	void TestIdAndVersionToName() {
 		assertEquals "LNC238", resolver.idAndVersionToVersionName("LNC", "238", IdType.CODE_SYSTEM())
 	}
 	
-	@Test
+	//@Test
 	void TestGetAllPossibleUris() {
 		foundCodeSystems.each {
 			assertNotNull it, resolver.idToUri(it, IdType.CODE_SYSTEM())

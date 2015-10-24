@@ -28,12 +28,12 @@ class VsmcValueSetReadService extends AbstractService with ValueSetReadService {
 
     val id = getOid(identifier)
 
-    val versions = vsacRestDao.getValueSetDefinitionVersions(id)
+    val labels = vsacRestDao.getValueSetDefinitionLabels(id)
 
-    if (versions.size == 0) {
+    if (labels.size == 0) {
       null
     } else {
-      val current = versions.last
+      val current = labels.last
 
       val valueSetJson = vsacRestDao.getValueSetDefinition(id, current)
 

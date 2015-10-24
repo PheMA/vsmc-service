@@ -59,9 +59,9 @@ class VsmcValueSetDefinitionQueryService
   def getResourceSummaries(query: ValueSetDefinitionQuery, sort: SortCriteria, page: Page = new Page()): DirectoryResult[ValueSetDefinitionDirectoryEntry] = {
     if (query.getRestrictions.getValueSet != null) {
       val oid = query.getRestrictions.getValueSet.getName
-      val versions = vsacRestDao.getValueSetDefinitionVersions(oid)
+      val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
 
-      val getValueSetFunctions = versions.foldLeft(Seq[Future[Any]]())(
+      val getValueSetFunctions = labels.foldLeft(Seq[Future[Any]]())(
       {
         (seq, ver) => seq :+ future {
           vsacRestDao.getValueSetDefinition(oid, ver)
