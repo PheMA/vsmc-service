@@ -125,10 +125,16 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
         }
       }
     } else {
+      val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
+      if (labels == null || CollectionUtils.isEmpty(labels)) {
+        return null;
+      }
+      val label = labels.get(0)
+
       val entry = new ValueSetDefinitionEntry()
       entry.setOperator(SetOperator.UNION)
       entry.setEntryOrder(1)
-      entry.setEntityList(getEntries(oid, version))
+      entry.setEntityList(getEntries(oid, version, label))
       valueSetDefinition.addEntry(entry)
     }
 
@@ -143,8 +149,8 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
     )
   }
 
-  private def getEntries(oid: String, version: String) = {
-    vsacRestDao.getMembersOfValueSet(oid, version, MAX_SPECIFIC_ENTITIES, 1).rows.foldLeft(new SpecificEntityList())(
+  private def getEntries(oid: String, version: String, label: String) = {
+    vsacRestDao.getMembersOfValueSet(oid, version, label, MAX_SPECIFIC_ENTITIES, 1).rows.foldLeft(new SpecificEntityList())(
       (list, row) => {
         list.addReferencedEntity(buildEntityEntry(row))
         list

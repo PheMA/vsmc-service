@@ -74,6 +74,13 @@ class VsacRestDao extends InitializingBean {
     parseJSON(json).rows.foldLeft(Seq[String]())(_ :+ _.name.toString).sortWith(_ < _)
   }
 
+  def getValueSetDefinitionLabels(oid: String) = {
+    val json = getJson(
+      vsacRestUrl + "/pc/vs/valueset/" + oid + "/release-labels")
+
+    parseJSON(json).get(0).releaselabels.foldLeft(Seq[String]())(_ :+ _.name.toString)
+  }
+
   private def _getAllValueSets: Seq[ScalaJSON] = {
     val json = postJson(vsacRestUrl + "/pc/vs/search", allValueSetsQueryParams)
 
@@ -96,7 +103,7 @@ class VsacRestDao extends InitializingBean {
     )
   }
 
-  def getMembersOfValueSet(oid: String, version: String, rows: Int, page: Int): ScalaJSON = {
+  def getMembersOfValueSet(oid: String, version: String, label: String, rows: Int, page: Int): ScalaJSON = {
     val url = vsacRestUrl + "/pc/code/codes"
     val queryParams =
       Map(
@@ -104,8 +111,7 @@ class VsacRestDao extends InitializingBean {
         "revision" -> version,
         "expRevision" -> null,
         "_search" -> false,
-        "label" -> LABEL,
-        "filters" -> null,
+        "label" -> label,
         "sortName" -> "code",
         "sortOrder" -> "asc",
         "effDate" -> null,
@@ -115,7 +121,6 @@ class VsacRestDao extends InitializingBean {
         "page" -> page.toString)
 
     val json = postJson(url, queryParams)
-
     parseJSON(json)
   }
 

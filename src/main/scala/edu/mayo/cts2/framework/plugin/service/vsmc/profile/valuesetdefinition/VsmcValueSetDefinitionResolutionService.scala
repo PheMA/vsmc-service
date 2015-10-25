@@ -3,6 +3,7 @@ package edu.mayo.cts2.framework.plugin.service.vsmc.profile.valuesetdefinition
 import java.util.Set
 import scala.collection.JavaConversions._
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.collections.CollectionUtils
 import org.springframework.stereotype.Component
 import edu.mayo.cts2.framework.model.command.Page
 import edu.mayo.cts2.framework.model.command.ResolvedReadContext
@@ -59,8 +60,14 @@ class VsmcValueSetDefinitionResolutionService extends AbstractService with Value
     val version = id.getName
     val oid = id.getValueSet.getName
 
+    val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
+    if (labels == null || CollectionUtils.isEmpty(labels)) {
+      return null;
+    }
+    val label = labels.get(0)
+
     val resultJson =
-      vsacRestDao.getMembersOfValueSet(oid, version, page.getMaxToReturn, page.getPage + 1)
+      vsacRestDao.getMembersOfValueSet(oid, version, label, page.getMaxToReturn, page.getPage + 1)
 
     val total: Int = resultJson.records
 
