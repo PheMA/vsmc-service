@@ -45,10 +45,16 @@ class VsacRestDao extends InitializingBean {
     parseJSON(json)
   }
 
+  def isEmpty(x: String) = x == null || !x.trim.nonEmpty
+
   def getValueSetDefinition(oid: String, version: String, label: String) = {
-    val params =
-      Map(
-        "label" -> label)
+    var params = Map("label" -> label)
+    if (isEmpty(label)) {
+      var autoVersions = getValueSetAutoupdateVersions(oid)
+      if (autoVersions != null && autoVersions.size > 0) {
+        params = Map("effDate" -> autoVersions.first)
+      }
+    }
 
     val json = getJson(
       vsacRestUrl + "/pc/vs/valueset/" + oid + "/detail", params)
@@ -81,6 +87,15 @@ class VsacRestDao extends InitializingBean {
     parseJSON(json).get(0).releaselabels.foldLeft(Seq[String]())(_ :+ _.name.toString)
   }
 
+  // Some value sets are auto-updated.  If they do not have a label, that auto-update
+  // date becomes the effective date to be used for additional quereis.
+  def getValueSetAutoupdateVersions(oid: String) = {
+    val json = getJson(
+      vsacRestUrl + "/pc/vs/valueset/" + oid + "/autoupdate-versions")
+
+    parseJSON(json).rows.foldLeft(Seq[String]())(_ :+ _.name.toString).sortWith(_ < _)
+  }
+
   private def _getAllValueSets: Seq[ScalaJSON] = {
     val json = postJson(vsacRestUrl + "/pc/vs/search", allValueSetsQueryParams)
 
@@ -105,7 +120,7 @@ class VsacRestDao extends InitializingBean {
 
   def getMembersOfValueSet(oid: String, version: String, label: String, rows: Int, page: Int): ScalaJSON = {
     val url = vsacRestUrl + "/pc/code/codes"
-    val queryParams =
+    var queryParams =
       Map(
         "oid" -> oid,
         "revision" -> version,
@@ -119,6 +134,26 @@ class VsacRestDao extends InitializingBean {
         "filterFields" -> null,
         "rows" -> rows.toString,
         "page" -> page.toString)
+
+    if (isEmpty(label)) {
+      var autoVersions = getValueSetAutoupdateVersions(oid)
+      if (autoVersions != null && autoVersions.size > 0) {
+        queryParams =
+          Map(
+            "oid" -> oid,
+            "revision" -> version,
+            "expRevision" -> null,
+            "_search" -> false,
+            "label" -> null,
+            "sortName" -> "code",
+            "sortOrder" -> "asc",
+            "effDate" -> autoVersions.first,
+            "filters" -> null,
+            "filterFields" -> null,
+            "rows" -> rows.toString,
+            "page" -> page.toString)
+      }
+    }
 
     val json = postJson(url, queryParams)
     parseJSON(json)

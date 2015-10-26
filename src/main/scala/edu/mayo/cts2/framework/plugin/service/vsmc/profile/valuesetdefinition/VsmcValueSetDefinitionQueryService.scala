@@ -63,10 +63,10 @@ class VsmcValueSetDefinitionQueryService
       val versions = vsacRestDao.getValueSetDefinitionVersions(oid)
 
       val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
-      if (labels == null || CollectionUtils.isEmpty(labels)) {
-        return null;
+      var label: String = null
+      if (labels != null && !CollectionUtils.isEmpty(labels)) {
+        label = labels.get(0)
       }
-      val label = labels.get(0)
 
       val getValueSetFunctions = versions.foldLeft(Seq[Future[Any]]())(
       {

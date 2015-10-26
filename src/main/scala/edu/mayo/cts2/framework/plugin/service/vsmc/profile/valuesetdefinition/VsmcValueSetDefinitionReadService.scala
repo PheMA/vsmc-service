@@ -45,7 +45,6 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
   def readByTag(
                  valueSet: NameOrURI,
                  tag: VersionTagReference, readContext: ResolvedReadContext): LocalIdValueSetDefinition = {
-
     if (tag.getContent() == null || !tag.getContent().equals("CURRENT")) {
       throw new RuntimeException("Only 'CURRENT' tag is supported")
     }
@@ -73,15 +72,14 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
   def read(
             identifier: ValueSetDefinitionReadId,
             readContext: ResolvedReadContext): LocalIdValueSetDefinition = {
-
     val oid = identifier.getValueSet.getName
     val version = identifier.getName
 
     val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
-    if (labels == null || CollectionUtils.isEmpty(labels)) {
-      return null;
+    var label: String = null;
+    if (labels != null && !CollectionUtils.isEmpty(labels)) {
+      label = labels.get(0)
     }
-    val label = labels.get(0)
 
     val definition =
     try {
@@ -132,10 +130,10 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
       }
     } else {
       val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
-      if (labels == null || CollectionUtils.isEmpty(labels)) {
-        return null;
+      var label: String = null
+      if (labels != null && !CollectionUtils.isEmpty(labels)) {
+        label = labels.get(0)
       }
-      val label = labels.get(0)
 
       val entry = new ValueSetDefinitionEntry()
       entry.setOperator(SetOperator.UNION)

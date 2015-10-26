@@ -61,10 +61,10 @@ class VsmcValueSetDefinitionResolutionService extends AbstractService with Value
     val oid = id.getValueSet.getName
 
     val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
-    if (labels == null || CollectionUtils.isEmpty(labels)) {
-      return null;
+    var label: String = null
+    if (labels != null && !CollectionUtils.isEmpty(labels)) {
+      label = labels.get(0)
     }
-    val label = labels.get(0)
 
     val resultJson =
       vsacRestDao.getMembersOfValueSet(oid, version, label, page.getMaxToReturn, page.getPage + 1)
