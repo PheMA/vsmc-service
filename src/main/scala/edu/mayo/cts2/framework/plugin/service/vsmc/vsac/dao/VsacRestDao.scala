@@ -45,10 +45,10 @@ class VsacRestDao extends InitializingBean {
     parseJSON(json)
   }
 
-  def getValueSetDefinition(oid: String, version: String) = {
+  def getValueSetDefinition(oid: String, version: String, label: String) = {
     val params =
       Map(
-        "label" -> LABEL)
+        "label" -> label)
 
     val json = getJson(
       vsacRestUrl + "/pc/vs/valueset/" + oid + "/detail", params)

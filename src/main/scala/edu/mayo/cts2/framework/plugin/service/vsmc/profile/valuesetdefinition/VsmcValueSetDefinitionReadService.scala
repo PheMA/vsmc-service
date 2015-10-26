@@ -77,9 +77,15 @@ class VsmcValueSetDefinitionReadService extends AbstractService with ValueSetDef
     val oid = identifier.getValueSet.getName
     val version = identifier.getName
 
+    val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
+    if (labels == null || CollectionUtils.isEmpty(labels)) {
+      return null;
+    }
+    val label = labels.get(0)
+
     val definition =
     try {
-      rowToValueSetDefinition(vsacRestDao.getValueSetDefinition(oid, version))
+      rowToValueSetDefinition(vsacRestDao.getValueSetDefinition(oid, version, label))
     } catch {
       case ioe: Exception => null
     }

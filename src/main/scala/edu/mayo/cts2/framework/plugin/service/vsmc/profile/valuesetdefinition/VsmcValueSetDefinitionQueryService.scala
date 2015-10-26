@@ -5,6 +5,7 @@ import scala.collection.JavaConversions._
 import actors.{Future, Futures}
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import org.apache.commons.collections.CollectionUtils
 
 import edu.mayo.cts2.framework.model.command.Page
 import edu.mayo.cts2.framework.model.core._
@@ -61,10 +62,16 @@ class VsmcValueSetDefinitionQueryService
       val oid = query.getRestrictions.getValueSet.getName
       val versions = vsacRestDao.getValueSetDefinitionVersions(oid)
 
+      val labels = vsacRestDao.getValueSetDefinitionLabels(oid)
+      if (labels == null || CollectionUtils.isEmpty(labels)) {
+        return null;
+      }
+      val label = labels.get(0)
+
       val getValueSetFunctions = versions.foldLeft(Seq[Future[Any]]())(
       {
         (seq, ver) => seq :+ future {
-          vsacRestDao.getValueSetDefinition(oid, ver)
+          vsacRestDao.getValueSetDefinition(oid, ver, label)
         }
       })
 

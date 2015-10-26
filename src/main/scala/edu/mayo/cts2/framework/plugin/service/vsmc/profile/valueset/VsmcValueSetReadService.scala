@@ -2,6 +2,7 @@ package edu.mayo.cts2.framework.plugin.service.vsmc.profile.valueset
 
 import java.lang.Override
 import org.springframework.stereotype.Component
+import org.apache.commons.collections.CollectionUtils
 import edu.mayo.cts2.framework.model.command.ResolvedReadContext
 import edu.mayo.cts2.framework.model.core._
 import edu.mayo.cts2.framework.model.service.core.NameOrURI
@@ -33,9 +34,14 @@ class VsmcValueSetReadService extends AbstractService with ValueSetReadService {
     if (versions.size == 0) {
       null
     } else {
-      val current = versions.last
+      val labels = vsacRestDao.getValueSetDefinitionLabels(id)
+      if (labels == null || labels.size == 0) {
+        return null;
+      }
+      val label = labels.first
 
-      val valueSetJson = vsacRestDao.getValueSetDefinition(id, current)
+      val current = versions.last
+      val valueSetJson = vsacRestDao.getValueSetDefinition(id, current, label)
 
       rowToValueSet(valueSetJson)
     }
